@@ -1,8 +1,25 @@
 from app.models.dataset import Dataset, DatasetVersion
+from app.models.document import DocumentFixture
 from app.models.evaluation_pack import EvaluationPack
 from app.models.project import Integration, Project
 from app.models.run import EvaluatorResult, Run, TestExecution, TraceEvent
 from app.models.test_case import TestCase
+
+
+def document_fixture_dict(doc: DocumentFixture, *, include_pages: bool = True) -> dict:
+    data = {
+        "id": doc.id,
+        "project_id": doc.project_id,
+        "filename": doc.filename,
+        "doc_type": doc.doc_type,
+        "extraction_status": doc.extraction_status,
+        "extraction_notes": doc.extraction_notes,
+        "page_count": len(doc.pages or []),
+        "created_at": doc.created_at,
+    }
+    if include_pages:
+        data["pages"] = doc.pages
+    return data
 
 
 def evaluation_pack_dict(pack: EvaluationPack) -> dict:

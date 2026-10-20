@@ -85,7 +85,19 @@ target application without touching the core.
   limitations" list read off the run's own real evaluator output (not a
   fixed boilerplate list). A real sample pulled from an actual run is
   checked in at `docs/sample_reports/`.
-- **74 passing automated tests** (`backend/tests/`), including true
+- **Document fixture upload with OCR fallback**:
+  `POST /projects/{project_id}/documents` accepts PDF/TXT/JSON, validates
+  type and size, and for PDFs tries native text extraction (`pypdf`)
+  first. If that looks like a scanned/image PDF (very little text per
+  page) and `MISTRAL_API_KEY` is set, it falls back to Mistral's OCR API
+  (the real 3-call contract -- upload, get a signed URL, call OCR --
+  verified against docs.mistral.ai, not guessed; see `docs/ocr.md`). If
+  OCR isn't configured or itself fails, the document is still saved but
+  marked `extraction_status: "partial"` with an explicit reason --
+  never silently reported as fully read when it wasn't. Verified live
+  with a real hand-built PDF (not just mocked): real native extraction,
+  real 400/413 validation errors, real partial-status fallback path.
+- **95 passing automated tests** (`backend/tests/`), including true
   end-to-end runs through both the mock adapter and the CovenAce file
   adapter, full API-level tests via FastAPI's TestClient, and a
   persistence test that reopens the SQLite file in a fresh process to
@@ -94,13 +106,13 @@ target application without touching the core.
 ## What's NOT yet implemented
 
 - 6 of the 12 originally planned frontend pages: document collection
-  (upload/browse fixtures), test-case JSON/CSV editor UI (the API supports
-  it; there's no dedicated editor page yet, just create-one-at-a-time),
-  evaluation methodology/config page, and report export page. What exists:
-  dashboard, projects & integrations, dataset/test-case browsing +
-  creation, run creation, run detail + trace viewer, regression compare.
-- Document fixture upload/OCR pipeline (document fixtures can be created
-  directly via the model/seed scripts; there's no upload endpoint yet).
+  (upload/browse fixtures -- the API now exists, see above), test-case
+  JSON/CSV editor UI (the API supports it; there's no dedicated editor
+  page yet, just create-one-at-a-time), evaluation methodology/config
+  page, and a report-download-browser page (the API + a run-detail link
+  exist, see Report export above). What exists: dashboard, projects &
+  integrations, dataset/test-case browsing + creation, run creation, run
+  detail + trace viewer, regression compare.
 - The live CovenAce Python/workflow adapter -- blocked on the entry-point
   details listed in docs/adapter_guide.md. The CovenAce evaluation pack
   itself exists and is tested, but only in file/batch mode.
@@ -125,7 +137,7 @@ source .venv/Scripts/activate
 python -m pytest -q
 ```
 
-Expected: `74 passed`.
+Expected: `95 passed`.
 
 ## Run the app locally
 
@@ -171,6 +183,9 @@ GET    /datasets/{dataset_id}/test-cases/export        ?format=json|csv
 POST   /datasets/{dataset_id}/versions                 immutable snapshot of current active test cases
 GET    /datasets/{dataset_id}/versions
 GET    /runs/{run_id}/report                           ?format=json|markdown
+POST   /projects/{project_id}/documents                 multipart upload (pdf/txt/json), see docs/ocr.md
+GET    /projects/{project_id}/documents
+GET    /documents/{document_id}
 ```
 
 ## Frontend
