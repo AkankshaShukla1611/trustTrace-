@@ -3,6 +3,7 @@ import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Projects from './pages/Projects'
 import ProjectDetail from './pages/ProjectDetail'
+import DocumentCollection from './pages/DocumentCollection'
 import DatasetDetail from './pages/DatasetDetail'
 import Runs from './pages/Runs'
 import RunNew from './pages/RunNew'
@@ -17,6 +18,7 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:projectId" element={<ProjectDetail />} />
+          <Route path="/projects/:projectId/documents" element={<DocumentCollection />} />
           <Route path="/datasets/:datasetId" element={<DatasetDetail />} />
           <Route path="/runs" element={<Runs />} />
           <Route path="/runs/new" element={<RunNew />} />

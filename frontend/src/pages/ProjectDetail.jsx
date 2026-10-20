@@ -254,9 +254,12 @@ export default function ProjectDetail() {
         </form>
       </Card>
 
-      <div>
+      <div className="flex gap-3">
         <Link to={`/runs/new?project_id=${projectId}`}>
           <PrimaryButton>Create a run for this project</PrimaryButton>
+        </Link>
+        <Link to={`/projects/${projectId}/documents`}>
+          <SecondaryButton>Document collection</SecondaryButton>
         </Link>
       </div>
     </div>

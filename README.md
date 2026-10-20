@@ -105,14 +105,15 @@ target application without touching the core.
 
 ## What's NOT yet implemented
 
-- 6 of the 12 originally planned frontend pages: document collection
-  (upload/browse fixtures -- the API now exists, see above), test-case
-  JSON/CSV editor UI (the API supports it; there's no dedicated editor
-  page yet, just create-one-at-a-time), evaluation methodology/config
-  page, and a report-download-browser page (the API + a run-detail link
-  exist, see Report export above). What exists: dashboard, projects &
-  integrations, dataset/test-case browsing + creation, run creation, run
-  detail + trace viewer, regression compare.
+- 4 of the 12 originally planned frontend pages remain: a dedicated
+  test-case JSON/CSV editor UI (the API supports it; there's no dedicated
+  editor page yet, just create-one-at-a-time), an evaluation
+  methodology/config page, and a report-download-browser page (the API +
+  a run-detail link already exist, see Report export above). What exists:
+  dashboard, projects & integrations, document collection (upload + browse
+  extracted pages, including partial-extraction notes), dataset/test-case
+  browsing + creation, run creation, run detail + trace viewer, regression
+  compare.
 - The live CovenAce Python/workflow adapter -- blocked on the entry-point
   details listed in docs/adapter_guide.md. The CovenAce evaluation pack
   itself exists and is tested, but only in file/batch mode.
@@ -201,9 +202,11 @@ every page calls the real backend API above. Pages: Dashboard (real
 pass-rate/coverage/critical-failure stats, denominators kept separate per
 the project's own requirement not to conflate coverage with accuracy),
 Projects & Integrations (create, validate, add integrations/datasets/packs
-inline), Dataset detail (test-case search/filter, create, JSON/CSV
-import+export), Run creation, Run detail (expandable trace viewer showing
-real trace events and evaluator results per execution), Regression Compare.
+inline), Document Collection (upload, browse extracted pages, see
+partial-extraction reasons), Dataset detail (test-case search/filter,
+create, JSON/CSV import+export), Run creation, Run detail (expandable
+trace viewer showing real trace events and evaluator results per
+execution, plus report download links), Regression Compare.
 
 **Known limitation -- not verified in a live browser in this session.**
 `npm run build` succeeds (confirms no import/syntax/type errors across all

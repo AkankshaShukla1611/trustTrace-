@@ -13,15 +13,7 @@ class ApiError extends Error {
   }
 }
 
-async function request(path, options = {}) {
-  const response = await fetch(`${BASE}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
-    },
-  })
-
+async function handleResponse(response) {
   if (!response.ok) {
     let detail = response.statusText
     try {
@@ -35,8 +27,26 @@ async function request(path, options = {}) {
 
   if (response.status === 204) return null
   const contentType = response.headers.get('content-type') || ''
-  if (contentType.includes('text/csv')) return response.text()
+  if (contentType.includes('text/csv') || contentType.includes('text/markdown')) return response.text()
   return response.json()
+}
+
+async function request(path, options = {}) {
+  const response = await fetch(`${BASE}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+    },
+  })
+  return handleResponse(response)
+}
+
+// Separate from request() because a multipart upload must NOT set
+// Content-Type itself -- the browser needs to add its own boundary.
+async function requestMultipart(path, formData) {
+  const response = await fetch(`${BASE}${path}`, { method: 'POST', body: formData })
+  return handleResponse(response)
 }
 
 export const api = {
@@ -78,6 +88,14 @@ export const api = {
       body: JSON.stringify({ test_cases: testCases, allow_duplicates: allowDuplicates }),
     }),
   exportTestCasesUrl: (datasetId, format) => `${BASE}/datasets/${datasetId}/test-cases/export?format=${format}`,
+
+  listDocuments: (projectId) => request(`/projects/${projectId}/documents`),
+  getDocument: (id) => request(`/documents/${id}`),
+  uploadDocument: (projectId, file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return requestMultipart(`/projects/${projectId}/documents`, formData)
+  },
 
   listRuns: (projectId) => request(`/runs${projectId ? `?project_id=${projectId}` : ''}`),
   getRun: (id) => request(`/runs/${id}`),
