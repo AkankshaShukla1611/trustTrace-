@@ -1,5 +1,64 @@
+from app.models.dataset import Dataset, DatasetVersion
+from app.models.evaluation_pack import EvaluationPack
 from app.models.project import Integration, Project
 from app.models.run import EvaluatorResult, Run, TestExecution, TraceEvent
+from app.models.test_case import TestCase
+
+
+def evaluation_pack_dict(pack: EvaluationPack) -> dict:
+    return {
+        "id": pack.id,
+        "slug": pack.slug,
+        "name": pack.name,
+        "description": pack.description,
+        "version": pack.version,
+    }
+
+
+def dataset_dict(dataset: Dataset) -> dict:
+    return {
+        "id": dataset.id,
+        "project_id": dataset.project_id,
+        "evaluation_pack_id": dataset.evaluation_pack_id,
+        "name": dataset.name,
+        "description": dataset.description,
+    }
+
+
+def dataset_version_dict(version: DatasetVersion) -> dict:
+    return {
+        "id": version.id,
+        "dataset_id": version.dataset_id,
+        "version_number": version.version_number,
+        "test_case_count": len(version.test_case_snapshot),
+        "test_case_snapshot": version.test_case_snapshot,
+        "created_at": version.created_at,
+    }
+
+
+def test_case_dict(tc: TestCase) -> dict:
+    return {
+        "id": tc.id,
+        "dataset_id": tc.dataset_id,
+        "evaluation_pack_id": tc.evaluation_pack_id,
+        "name": tc.name,
+        "description": tc.description,
+        "category": tc.category,
+        "tags": tc.tags,
+        "severity": tc.severity,
+        "input_payload": tc.input_payload,
+        "behavior_type": tc.behavior_type,
+        "expected_output": tc.expected_output,
+        "expected_evidence": tc.expected_evidence,
+        "relevant_passage_ids": tc.relevant_passage_ids,
+        "expected_tool_calls": tc.expected_tool_calls,
+        "prohibited_tool_calls": tc.prohibited_tool_calls,
+        "evaluator_config": tc.evaluator_config,
+        "preconditions": tc.preconditions,
+        "version": tc.version,
+        "status": tc.status,
+        "content_hash": tc.content_hash,
+    }
 
 
 def project_dict(project: Project) -> dict:

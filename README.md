@@ -70,19 +70,25 @@ target application without touching the core.
   passed, non-comparable, category-level breakdown, critical-failure
   tracking) plus a configurable release gate that blocks on critical
   failures regardless of average score.
-- **A real FastAPI app** (`app/main.py`) exposing projects, integrations
-  (create + validate), runs, and regression comparison -- all backed by the
-  above, no hardcoded responses.
-- **52 passing automated tests** (`backend/tests/`), including true
+- **A real FastAPI app**, organized as routers (`app/api/`): projects and
+  integrations (create + validate), runs and regression comparison, and
+  **dataset/test-case management** -- evaluation packs, datasets, dataset
+  version snapshots, test case CRUD with search/filter (category, severity,
+  tag, free-text), content-hash-based duplicate detection, actionable
+  validation errors, and JSON/CSV bulk import + export (round-trip tested
+  both ways). All backed by the database, no hardcoded responses.
+- **69 passing automated tests** (`backend/tests/`), including true
   end-to-end runs through both the mock adapter and the CovenAce file
-  adapter, and a persistence test that reopens the SQLite file in a fresh
-  process to confirm data survives a restart.
+  adapter, full API-level tests via FastAPI's TestClient, and a
+  persistence test that reopens the SQLite file in a fresh process to
+  confirm data survives a restart.
 
 ## What's NOT yet implemented
 
-- React/Vite frontend (all 12 planned pages).
-- Dataset/test-case management API + JSON/CSV import-export.
-- Document fixture upload/OCR pipeline.
+- React/Vite frontend (all 12 planned pages) -- the API it would call now
+  exists (see above), so this is next.
+- Document fixture upload/OCR pipeline (document fixtures can be created
+  directly via the model/seed scripts; there's no upload endpoint yet).
 - The live CovenAce Python/workflow adapter -- blocked on the entry-point
   details listed in docs/adapter_guide.md. The CovenAce evaluation pack
   itself exists and is tested, but only in file/batch mode.
@@ -108,7 +114,7 @@ source .venv/Scripts/activate
 python -m pytest -q
 ```
 
-Expected: `52 passed`.
+Expected: `69 passed`.
 
 ## Run the app locally
 
@@ -131,6 +137,32 @@ The seed script also runs a second "regressed configuration" integration
 against the same dataset and prints a real regression summary and
 release-gate verdict -- this is the generic engine proving itself on the
 mock target before any domain-specific (CovenAce) work begins.
+
+Browse and call every endpoint interactively at
+**http://127.0.0.1:8731/docs** (FastAPI's auto-generated Swagger UI) --
+no code needed.
+
+## Managing datasets and test cases via the API
+
+```
+POST   /evaluation-packs                              create a pack
+GET    /evaluation-packs
+POST   /projects/{project_id}/datasets                 create a dataset
+GET    /projects/{project_id}/datasets
+POST   /datasets/{dataset_id}/test-cases               create a test case (validates, rejects exact-content duplicates)
+GET    /datasets/{dataset_id}/test-cases               ?category=&severity=&tag=&q=&status=
+GET    /test-cases/{test_case_id}
+PUT    /test-cases/{test_case_id}                      bumps version + content_hash
+DELETE /test-cases/{test_case_id}                      soft delete (archived, not removed)
+POST   /datasets/{dataset_id}/test-cases/import        bulk JSON import -> {created, skipped_duplicates, errors}
+POST   /datasets/{dataset_id}/test-cases/import-csv    multipart file upload, same report shape
+GET    /datasets/{dataset_id}/test-cases/export        ?format=json|csv
+POST   /datasets/{dataset_id}/versions                 immutable snapshot of current active test cases
+GET    /datasets/{dataset_id}/versions
+```
+
+Round-trip tested both ways (export then re-import reproduces the same
+test cases) in `backend/tests/test_dataset_and_test_case_api.py`.
 
 ## Database reset
 
