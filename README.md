@@ -21,9 +21,13 @@ Layer C  Evaluation packs     per-application test cases + domain rules
                               (app/evaluation_packs/, DB-backed EvaluationPack)
 ```
 
-See [docs/architecture.md](docs/architecture.md) for the full data model and
+See [docs/architecture.md](docs/architecture.md) for the full data model,
 [docs/adapter_guide.md](docs/adapter_guide.md) for how to connect a new
-target application without touching the core.
+target application without touching the core, [docs/demo_script.md](docs/demo_script.md)
+for a guided walkthrough (passing test → controlled failure → trace
+investigation → regression comparison), and
+[docs/known_limitations.md](docs/known_limitations.md) for a single
+consolidated list of everything not yet done, blocked, or partial.
 
 ## What's implemented (verified by actually running it, not just written)
 
