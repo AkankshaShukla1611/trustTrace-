@@ -6,7 +6,7 @@ pipelines, and tool-using agents through one reusable core, pluggable
 adapters, and per-application evaluation packs.
 
 **Status:** backend (generic core, 2 evaluation packs, full API) is
-implemented and tested. The frontend (9 of 12 planned pages) is verified
+implemented and tested. The frontend (all 12 planned pages) is verified
 end to end with a real headless browser rendering real data -- but only in
 production-preview mode (`npm run preview`), not `npm run dev`; see "Known
 limitation" below for why. See "What's implemented" for the exact boundary.
@@ -110,17 +110,13 @@ consolidated list of everything not yet done, blocked, or partial.
 
 ## What's NOT yet implemented
 
-- 3 of the 12 originally planned frontend pages remain: a dedicated
-  test-case JSON/CSV editor UI (the API supports it; there's no dedicated
-  editor page yet, just create-one-at-a-time) and a report-download-browser
-  page (the API + a run-detail link already exist, see Report export
-  above). What exists: dashboard, projects & integrations, document
-  collection (upload + browse extracted pages, including
-  partial-extraction notes), dataset/test-case browsing + creation, run
-  creation, run detail + trace viewer, regression compare, and evaluation
-  methodology (evaluator descriptions pulled live from their own
-  docstrings via `GET /evaluators`, so this page can't drift from what
-  the engine actually runs).
+- All 12 originally planned frontend pages now exist: dashboard, projects
+  & integrations, document collection, dataset/test-case management
+  (create, search/filter, **edit existing cases** -- not just
+  create-then-archive, JSON/CSV import+export), run creation, run detail
+  + trace viewer, regression compare, reports (browse + inline preview +
+  download every run's report, not just a link on its own run page), and
+  evaluation methodology.
 - The live CovenAce Python/workflow adapter -- blocked on the entry-point
   details listed in docs/adapter_guide.md. The CovenAce evaluation pack
   itself exists and is tested, but only in file/batch mode.
@@ -220,10 +216,11 @@ the project's own requirement not to conflate coverage with accuracy),
 Projects & Integrations (create, validate, add integrations/datasets/packs
 inline), Document Collection (upload, browse extracted pages, see
 partial-extraction reasons), Dataset detail (test-case search/filter,
-create, JSON/CSV import+export), Run creation, Run detail (expandable
-trace viewer showing real trace events and evaluator results per
-execution, plus report download links), Regression Compare, Evaluation
-Methodology (evaluator descriptions + coverage-vs-accuracy explanation).
+create, **edit**, JSON/CSV import+export), Run creation, Run detail
+(expandable trace viewer showing real trace events and evaluator results
+per execution), Regression Compare, Reports (browse every run, preview a
+report's Markdown inline, download JSON/Markdown), Evaluation Methodology
+(evaluator descriptions + coverage-vs-accuracy explanation).
 
 **Known limitation -- `npm run dev` doesn't work in this environment,
 use `npm run preview` instead.** `npm run dev` hits a Windows `EBUSY:

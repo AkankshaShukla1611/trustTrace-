@@ -28,11 +28,6 @@ nothing is implied to be finished that isn't.
   function -- correct per the project's own requirement that the free
   local demo need no API key, but it means nuanced free-text judgment
   (beyond lexical-overlap citation support) isn't covered.
-- **Two frontend pages**: a dedicated test-case JSON/CSV bulk-editor UI
-  (the API fully supports create/import/export; there's just no page
-  that edits many at once beyond one-at-a-time creation) and a
-  dedicated report-browsing page (the API + a download link on the run
-  detail page exist; there's no page that lists/browses past reports).
 
 ## Partial by design, not by oversight
 
@@ -65,10 +60,12 @@ nothing is implied to be finished that isn't.
 
 ## Frontend
 
-- **9 of 12 originally-planned pages exist** (dashboard, projects &
-  integrations, document collection, dataset/test-case management, run
-  creation, run detail/trace viewer, regression compare, evaluation
-  methodology). Missing: the two editor/browser pages noted above.
+- **All 12 originally-planned pages exist** (dashboard, projects &
+  integrations, document collection, dataset/test-case management --
+  including editing an existing case, not just create-then-archive --
+  run creation, run detail/trace viewer, regression compare, reports
+  browser with inline preview, evaluation methodology), each verified
+  with a real headless-browser render against real backend data.
 - **`npm run dev` does not work on this development machine** -- a
   Windows file-lock (`EBUSY`) in Vite's dependency-optimizer step,
   matching an antivirus real-time-scan signature, reproduced across every

@@ -10,6 +10,7 @@ import RunNew from './pages/RunNew'
 import RunDetail from './pages/RunDetail'
 import RegressionCompare from './pages/RegressionCompare'
 import EvaluationMethodology from './pages/EvaluationMethodology'
+import Reports from './pages/Reports'
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="/runs/:runId" element={<RunDetail />} />
           <Route path="/regression" element={<RegressionCompare />} />
           <Route path="/methodology" element={<EvaluationMethodology />} />
+          <Route path="/reports" element={<Reports />} />
         </Route>
       </Routes>
     </BrowserRouter>

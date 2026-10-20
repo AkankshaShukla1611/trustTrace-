@@ -30,6 +30,7 @@ export default function DatasetDetail() {
   const [filters, setFilters] = useState({ category: '', severity: '', tag: '', q: '' })
   const [form, setForm] = useState(BLANK_CASE)
   const [formError, setFormError] = useState(null)
+  const [editingId, setEditingId] = useState(null)
 
   async function load() {
     try {
@@ -74,7 +75,7 @@ export default function DatasetDetail() {
     return payload
   }
 
-  async function handleCreate(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     setFormError(null)
     let payload
@@ -85,18 +86,47 @@ export default function DatasetDetail() {
       return
     }
     try {
-      await api.createTestCase(datasetId, payload)
+      if (editingId) {
+        await api.updateTestCase(editingId, payload)
+      } else {
+        await api.createTestCase(datasetId, payload)
+      }
       setForm(BLANK_CASE)
+      setEditingId(null)
       await loadCases()
     } catch (err) {
       setFormError(err.detail ? JSON.stringify(err.detail) : err.message)
     }
   }
 
+  function handleStartEdit(tc) {
+    setFormError(null)
+    setEditingId(tc.id)
+    setForm({
+      name: tc.name,
+      category: tc.category,
+      severity: tc.severity,
+      behavior_type: tc.behavior_type,
+      tags: (tc.tags || []).join(', '),
+      input_payload: JSON.stringify(tc.input_payload ?? {}, null, 2),
+      expected_output: tc.expected_output ? JSON.stringify(tc.expected_output, null, 2) : '',
+      expected_evidence: JSON.stringify(tc.expected_evidence ?? [], null, 2),
+      evaluator_config: JSON.stringify(tc.evaluator_config ?? {}, null, 2),
+    })
+    document.getElementById('test-case-form')?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  function handleCancelEdit() {
+    setEditingId(null)
+    setForm(BLANK_CASE)
+    setFormError(null)
+  }
+
   async function handleArchive(id) {
     setError(null)
     try {
       await api.archiveTestCase(id)
+      if (editingId === id) handleCancelEdit()
       await loadCases()
     } catch (err) {
       setError(err)
@@ -270,6 +300,9 @@ export default function DatasetDetail() {
                   </td>
                   <td className="py-2 pr-4 text-slate-500">{tc.behavior_type}</td>
                   <td className="py-2">
+                    <button onClick={() => handleStartEdit(tc)} className="mr-3 text-xs text-sky-700 hover:underline">
+                      Edit
+                    </button>
                     <button onClick={() => handleArchive(tc.id)} className="text-xs text-rose-600 hover:underline">
                       Archive
                     </button>
@@ -281,9 +314,10 @@ export default function DatasetDetail() {
         )}
       </Card>
 
-      <Card title="Create a test case">
+      <Card title={editingId ? `Edit test case (${editingId})` : 'Create a test case'}>
+        <div id="test-case-form" />
         {formError && <p className="mb-3 text-sm text-rose-700">{formError}</p>}
-        <form onSubmit={handleCreate} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-3">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             <div>
               <label className="block text-xs font-medium text-slate-500">Name</label>
@@ -376,7 +410,14 @@ export default function DatasetDetail() {
               />
             </div>
           </div>
-          <SecondaryButton type="submit">Create test case</SecondaryButton>
+          <div className="flex gap-3">
+            <SecondaryButton type="submit">{editingId ? 'Save changes' : 'Create test case'}</SecondaryButton>
+            {editingId && (
+              <button type="button" onClick={handleCancelEdit} className="text-sm text-slate-500 hover:underline">
+                Cancel edit
+              </button>
+            )}
+          </div>
         </form>
       </Card>
     </div>
