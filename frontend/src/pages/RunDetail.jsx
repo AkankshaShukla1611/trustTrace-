@@ -103,7 +103,17 @@ export default function RunDetail() {
         <Link to="/runs" className="text-sm text-sky-700 hover:underline">
           &larr; All runs
         </Link>
-        <h2 className="text-xl font-bold text-slate-900">{run.label || run.id}</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-slate-900">{run.label || run.id}</h2>
+          <div className="flex gap-3 text-sm">
+            <a href={api.reportUrl(run.id, 'markdown')} className="text-sky-700 hover:underline">
+              Download report (Markdown)
+            </a>
+            <a href={api.reportUrl(run.id, 'json')} className="text-sky-700 hover:underline">
+              Download report (JSON)
+            </a>
+          </div>
+        </div>
         <p className="text-sm text-slate-500">
           <StatusBadge status={run.status} /> &middot; started {new Date(run.started_at).toLocaleString()}
           {run.finished_at && ` -- finished ${new Date(run.finished_at).toLocaleString()}`}

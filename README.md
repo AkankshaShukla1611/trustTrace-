@@ -77,7 +77,15 @@ target application without touching the core.
   tag, free-text), content-hash-based duplicate detection, actionable
   validation errors, and JSON/CSV bulk import + export (round-trip tested
   both ways). All backed by the database, no hardcoded responses.
-- **69 passing automated tests** (`backend/tests/`), including true
+- **Report export**: `GET /runs/{run_id}/report?format=json|markdown` --
+  run metadata, metrics with coverage and accuracy kept as separate
+  denominators, failures with evaluator detail, unavailable-evaluation
+  coverage gaps (grouped by evaluator+reason in Markdown), an automatic
+  regression section when the run has a baseline, and a "known
+  limitations" list read off the run's own real evaluator output (not a
+  fixed boilerplate list). A real sample pulled from an actual run is
+  checked in at `docs/sample_reports/`.
+- **74 passing automated tests** (`backend/tests/`), including true
   end-to-end runs through both the mock adapter and the CovenAce file
   adapter, full API-level tests via FastAPI's TestClient, and a
   persistence test that reopens the SQLite file in a fresh process to
@@ -98,7 +106,6 @@ target application without touching the core.
   itself exists and is tested, but only in file/batch mode.
 - LLM-as-judge evaluator (deliberately deferred; deterministic evaluators
   are sufficient for the free local demo per the project requirements).
-- Report export (JSON/Markdown).
 
 ## Setup
 
@@ -118,7 +125,7 @@ source .venv/Scripts/activate
 python -m pytest -q
 ```
 
-Expected: `69 passed`.
+Expected: `74 passed`.
 
 ## Run the app locally
 
@@ -163,6 +170,7 @@ POST   /datasets/{dataset_id}/test-cases/import-csv    multipart file upload, sa
 GET    /datasets/{dataset_id}/test-cases/export        ?format=json|csv
 POST   /datasets/{dataset_id}/versions                 immutable snapshot of current active test cases
 GET    /datasets/{dataset_id}/versions
+GET    /runs/{run_id}/report                           ?format=json|markdown
 ```
 
 ## Frontend

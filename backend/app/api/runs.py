@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -11,6 +12,7 @@ from app.runner.engine import run_dataset_version
 from app.runner.regression import compare_runs, evaluate_release_gate
 from app.schemas.common import RegressionCompareRequest, RunCreate
 from app.serializers import run_dict
+from app.services.report_service import build_run_report, render_markdown
 
 router = APIRouter(tags=["runs"])
 
@@ -48,6 +50,18 @@ def get_run(run_id: str, db: Session = Depends(get_db)):
     if run is None:
         raise HTTPException(404, "run not found")
     return run_dict(run)
+
+
+@router.get("/runs/{run_id}/report")
+def get_run_report(run_id: str, format: str = Query("json", pattern="^(json|markdown)$"), db: Session = Depends(get_db)):
+    try:
+        report = build_run_report(db, run_id)
+    except ValueError as exc:
+        raise HTTPException(404, str(exc))
+
+    if format == "markdown":
+        return PlainTextResponse(render_markdown(report), media_type="text/markdown")
+    return report
 
 
 @router.post("/regression/compare")

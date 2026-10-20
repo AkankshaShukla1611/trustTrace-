@@ -82,6 +82,7 @@ export const api = {
   listRuns: (projectId) => request(`/runs${projectId ? `?project_id=${projectId}` : ''}`),
   getRun: (id) => request(`/runs/${id}`),
   createRun: (data) => request('/runs', { method: 'POST', body: JSON.stringify(data) }),
+  reportUrl: (runId, format) => `${BASE}/runs/${runId}/report?format=${format}`,
 
   compareRuns: (baselineRunId, candidateRunId) =>
     request('/regression/compare', {
