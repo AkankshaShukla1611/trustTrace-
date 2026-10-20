@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api import datasets, documents, projects, runs, test_cases
+from app.api import datasets, documents, evaluators, projects, runs, test_cases
 from app.database import init_db
 
 
@@ -26,3 +26,4 @@ app.include_router(runs.router)
 app.include_router(datasets.router)
 app.include_router(test_cases.router)
 app.include_router(documents.router)
+app.include_router(evaluators.router)

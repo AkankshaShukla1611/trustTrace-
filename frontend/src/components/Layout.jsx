@@ -5,6 +5,7 @@ const NAV_ITEMS = [
   { to: '/projects', label: 'Projects & Integrations' },
   { to: '/runs', label: 'Runs' },
   { to: '/regression', label: 'Regression Compare' },
+  { to: '/methodology', label: 'Evaluation Methodology' },
 ]
 
 function navClass({ isActive }) {

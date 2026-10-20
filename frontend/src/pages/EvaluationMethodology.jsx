@@ -1,0 +1,105 @@
+import { useEffect, useState } from 'react'
+import { api } from '../api/client'
+import { Card, ErrorBanner, Loading } from '../components/common'
+
+const EXECUTION_STATUSES = [
+  ['passed', 'Every applicable evaluator passed. At least one evaluator was applicable.'],
+  ['failed', 'At least one applicable evaluator failed (or errored).'],
+  ['unevaluated', 'Execution succeeded, but no evaluator had anything applicable to check -- never counted as a pass.'],
+  ['execution_error', 'The adapter itself failed or timed out. Distinct from a wrong answer -- evaluation is skipped entirely.'],
+  ['cancelled', 'The run was cancelled before this execution completed.'],
+]
+
+const EVALUATOR_STATUSES = [
+  ['pass', 'The evaluator ran and the output met its criteria.'],
+  ['fail', 'The evaluator ran and the output did not meet its criteria.'],
+  ['unavailable', 'Nothing applicable to check for this test case (e.g. no labeled evidence, wrong behavior_type for this evaluator). Never counted toward pass or fail.'],
+  ['error', 'The evaluator itself hit a configuration/rule problem (e.g. an unparseable date format) -- a defect in the test setup, not a verdict on the output.'],
+  ['inconclusive', 'Reserved for judgment-based evaluators (e.g. LLM-as-judge) that are not currently enabled in this deployment.'],
+]
+
+export default function EvaluationMethodology() {
+  const [evaluators, setEvaluators] = useState(null)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    api.listEvaluators().then(setEvaluators).catch(setError)
+  }, [])
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-bold text-slate-900">Evaluation Methodology</h2>
+        <p className="text-sm text-slate-500">
+          Every evaluator below is deterministic -- no LLM call, no API key required. Descriptions are pulled live
+          from each evaluator's own docstring in the backend, so this page can't drift out of sync with what the
+          engine actually runs.
+        </p>
+      </div>
+
+      <ErrorBanner error={error} />
+
+      <Card title="Coverage vs. accuracy -- kept as separate numbers on purpose">
+        <p className="text-sm text-slate-600">
+          <strong>Pass rate</strong> is passed / (passed + failed) -- it only looks at cases an evaluator actually
+          judged. <strong>Evaluation coverage</strong> is (passed + failed) / total -- how much of the dataset had
+          an applicable evaluator at all. A high pass rate on low coverage is a thin signal, not a strong one; the
+          dashboard and reports always show both, never blend them into one score.
+        </p>
+      </Card>
+
+      <Card title={`Deterministic evaluators (${evaluators?.length ?? '...'})`}>
+        {!evaluators ? (
+          <Loading />
+        ) : (
+          <div className="space-y-4">
+            {evaluators.map((ev) => (
+              <div key={ev.name} className="border-b border-slate-100 pb-4 last:border-0">
+                <div className="flex items-baseline gap-2">
+                  <h4 className="font-mono text-sm font-semibold text-slate-900">{ev.name}</h4>
+                  <span className="text-xs text-slate-400">v{ev.version}</span>
+                </div>
+                <p className="mt-1 whitespace-pre-line text-sm text-slate-600">{ev.description}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      <Card title="Execution statuses">
+        <table className="w-full text-sm">
+          <tbody>
+            {EXECUTION_STATUSES.map(([status, meaning]) => (
+              <tr key={status} className="border-t border-slate-100">
+                <td className="py-2 pr-4 align-top font-mono text-xs font-semibold text-slate-700">{status}</td>
+                <td className="py-2 text-slate-600">{meaning}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
+
+      <Card title="Evaluator statuses">
+        <table className="w-full text-sm">
+          <tbody>
+            {EVALUATOR_STATUSES.map(([status, meaning]) => (
+              <tr key={status} className="border-t border-slate-100">
+                <td className="py-2 pr-4 align-top font-mono text-xs font-semibold text-slate-700">{status}</td>
+                <td className="py-2 text-slate-600">{meaning}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
+
+      <Card title="What TrustTrace does not claim">
+        <ul className="list-disc space-y-1 pl-5 text-sm text-slate-600">
+          <li>No LLM-as-judge is enabled by default -- every result above comes from a deterministic rule, not a model's opinion.</li>
+          <li>Citation "support" checks are lexical overlap, not semantic entailment -- a citation can overlap in wording without actually supporting the claim, and vice versa.</li>
+          <li>A `file`-adapter run evaluates supplied output/evidence only; it cannot independently verify the target application's live execution.</li>
+          <li>Passing a test case proves the configured checks were satisfied -- it is not a guarantee the application is correct in every respect.</li>
+        </ul>
+      </Card>
+    </div>
+  )
+}

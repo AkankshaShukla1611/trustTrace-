@@ -105,15 +105,17 @@ target application without touching the core.
 
 ## What's NOT yet implemented
 
-- 4 of the 12 originally planned frontend pages remain: a dedicated
+- 3 of the 12 originally planned frontend pages remain: a dedicated
   test-case JSON/CSV editor UI (the API supports it; there's no dedicated
-  editor page yet, just create-one-at-a-time), an evaluation
-  methodology/config page, and a report-download-browser page (the API +
-  a run-detail link already exist, see Report export above). What exists:
-  dashboard, projects & integrations, document collection (upload + browse
-  extracted pages, including partial-extraction notes), dataset/test-case
-  browsing + creation, run creation, run detail + trace viewer, regression
-  compare.
+  editor page yet, just create-one-at-a-time) and a report-download-browser
+  page (the API + a run-detail link already exist, see Report export
+  above). What exists: dashboard, projects & integrations, document
+  collection (upload + browse extracted pages, including
+  partial-extraction notes), dataset/test-case browsing + creation, run
+  creation, run detail + trace viewer, regression compare, and evaluation
+  methodology (evaluator descriptions pulled live from their own
+  docstrings via `GET /evaluators`, so this page can't drift from what
+  the engine actually runs).
 - The live CovenAce Python/workflow adapter -- blocked on the entry-point
   details listed in docs/adapter_guide.md. The CovenAce evaluation pack
   itself exists and is tested, but only in file/batch mode.
@@ -138,7 +140,7 @@ source .venv/Scripts/activate
 python -m pytest -q
 ```
 
-Expected: `95 passed`.
+Expected: `96 passed`.
 
 ## Run the app locally
 
@@ -187,6 +189,7 @@ GET    /runs/{run_id}/report                           ?format=json|markdown
 POST   /projects/{project_id}/documents                 multipart upload (pdf/txt/json), see docs/ocr.md
 GET    /projects/{project_id}/documents
 GET    /documents/{document_id}
+GET    /evaluators                                     descriptions pulled live from each evaluator's docstring
 ```
 
 ## Frontend
@@ -206,7 +209,8 @@ inline), Document Collection (upload, browse extracted pages, see
 partial-extraction reasons), Dataset detail (test-case search/filter,
 create, JSON/CSV import+export), Run creation, Run detail (expandable
 trace viewer showing real trace events and evaluator results per
-execution, plus report download links), Regression Compare.
+execution, plus report download links), Regression Compare, Evaluation
+Methodology (evaluator descriptions + coverage-vs-accuracy explanation).
 
 **Known limitation -- not verified in a live browser in this session.**
 `npm run build` succeeds (confirms no import/syntax/type errors across all

@@ -1,17 +1,4 @@
-"""
-Citation/evidence grounding: three independent checks, deliberately kept
-separate because a valid citation is not the same thing as a grounded
-answer.
-  1. existence  -- does the cited document/page actually exist?
-  2. relevance  -- does the citation point to a passage labeled relevant
-                   for this test case?
-  3. support    -- does the cited passage's text actually contain
-                   enough overlap with the answer to plausibly support it?
-
-Check 3 is a deterministic lexical-overlap heuristic, not true semantic
-entailment -- its limitation is reported in every outcome so it is never
-mistaken for a stronger guarantee.
-"""
+"""See CitationGroundingEvaluator's docstring for the three checks it runs."""
 from __future__ import annotations
 import re
 
@@ -36,6 +23,22 @@ def _find_page_text(ctx: EvaluationContext, document_id: str, page: int) -> str 
 
 
 class CitationGroundingEvaluator(BaseEvaluator):
+    """
+    Citation/evidence grounding: three independent checks, deliberately
+    kept separate because a valid citation is not the same thing as a
+    grounded answer.
+      1. existence  -- does the cited document/page actually exist?
+      2. relevance  -- does the citation point to a passage labeled
+                        relevant for this test case?
+      3. support    -- does the cited passage's text actually contain
+                        enough overlap with the answer to plausibly
+                        support it?
+
+    Check 3 is a deterministic lexical-overlap heuristic, not true
+    semantic entailment -- its limitation is reported in every outcome
+    so it is never mistaken for a stronger guarantee.
+    """
+
     name = "citation_grounding"
     version = "1.0.0"
 

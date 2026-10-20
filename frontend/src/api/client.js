@@ -60,6 +60,8 @@ export const api = {
   validateIntegration: (integrationId) =>
     request(`/integrations/${integrationId}/validate`, { method: 'POST' }),
 
+  listEvaluators: () => request('/evaluators'),
+
   listEvaluationPacks: () => request('/evaluation-packs'),
   createEvaluationPack: (data) => request('/evaluation-packs', { method: 'POST', body: JSON.stringify(data) }),
 
