@@ -7,6 +7,7 @@ from app.evaluators.citation_grounding import CitationGroundingEvaluator
 from app.evaluators.abstention import AbstentionEvaluator
 from app.evaluators.conflict_detection import ConflictDetectionEvaluator
 from app.evaluators.missing_field import MissingFieldEvaluator
+from app.evaluators.hitl_gate import HitlGateEvaluator
 
 DETERMINISTIC_EVALUATORS: list[BaseEvaluator] = [
     SchemaCorrectnessEvaluator(),
@@ -16,6 +17,7 @@ DETERMINISTIC_EVALUATORS: list[BaseEvaluator] = [
     AbstentionEvaluator(),
     ConflictDetectionEvaluator(),
     MissingFieldEvaluator(),
+    HitlGateEvaluator(),
 ]
 
 

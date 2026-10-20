@@ -26,6 +26,22 @@ target application without touching the core.
 
 ## What's implemented (verified by actually running it, not just written)
 
+- **A second, real evaluation pack**: `app/evaluation_packs/covenace_pack/`,
+  built from a confirmed-synthetic C&I credit review case (not invented
+  figures -- every expected value in it was read out of real source
+  documents during analysis; see that pack's README for the full
+  provenance and citations). Runs through the `file` adapter since live
+  CovenAce execution isn't connected yet (see "What's NOT yet implemented"
+  and `docs/adapter_guide.md`). Demonstrates all 7 items from the CovenAce
+  acceptance checklist -- a correct extraction passing, an incorrect
+  numeric value failing, a wrong citation failing, a missing value
+  correctly reported missing (plus a controlled contrast where inventing
+  one fails), a real cross-document conflict that goes unflagged, an
+  HITL-gate check, and a genuine regression between two runs (the newer of
+  two real credit memos has 8 literal unresolved HITL review markers in
+  its own text; the prior one has zero) -- enforced by
+  `tests/test_covenace_pack_demo.py`, not just a one-off script.
+
 - **Data models** for projects, integrations, evaluation packs, datasets +
   immutable dataset versions, test cases, document fixtures, runs, test
   executions, trace events, evaluator results, regression comparisons.
@@ -57,18 +73,19 @@ target application without touching the core.
 - **A real FastAPI app** (`app/main.py`) exposing projects, integrations
   (create + validate), runs, and regression comparison -- all backed by the
   above, no hardcoded responses.
-- **42 passing automated tests** (`backend/tests/`), including a true
-  end-to-end run through the mock adapter and a persistence test that
-  reopens the SQLite file in a fresh process to confirm data survives a
-  restart.
+- **52 passing automated tests** (`backend/tests/`), including true
+  end-to-end runs through both the mock adapter and the CovenAce file
+  adapter, and a persistence test that reopens the SQLite file in a fresh
+  process to confirm data survives a restart.
 
 ## What's NOT yet implemented
 
 - React/Vite frontend (all 12 planned pages).
 - Dataset/test-case management API + JSON/CSV import-export.
 - Document fixture upload/OCR pipeline.
-- The CovenAce evaluation pack and its Python/workflow adapter (blocked on
-  the CovenAce entry-point details listed in docs/adapter_guide.md).
+- The live CovenAce Python/workflow adapter -- blocked on the entry-point
+  details listed in docs/adapter_guide.md. The CovenAce evaluation pack
+  itself exists and is tested, but only in file/batch mode.
 - LLM-as-judge evaluator (deliberately deferred; deterministic evaluators
   are sufficient for the free local demo per the project requirements).
 - Report export (JSON/Markdown).
@@ -91,14 +108,15 @@ source .venv/Scripts/activate
 python -m pytest -q
 ```
 
-Expected: `42 passed`.
+Expected: `52 passed`.
 
 ## Run the app locally
 
 ```bash
 cd backend
 source .venv/Scripts/activate
-PYTHONPATH=. python scripts/seed_mock_demo.py   # creates backend/data/trusttrace.db with a real run
+PYTHONPATH=. python scripts/seed_mock_demo.py      # mock pack: real run + a controlled regression
+PYTHONPATH=. python scripts/seed_covenace_demo.py   # CovenAce pack: real synthetic-case run (file adapter)
 python -m uvicorn app.main:app --port 8731
 ```
 
