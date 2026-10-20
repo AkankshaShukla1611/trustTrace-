@@ -1,4 +1,5 @@
 from __future__ import annotations
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
 from fastapi import Depends, FastAPI, HTTPException
@@ -15,12 +16,14 @@ from app.runner.regression import compare_runs, evaluate_release_gate
 from app.schemas.common import IntegrationCreate, ProjectCreate, RegressionCompareRequest, RunCreate
 from app.serializers import integration_dict, project_dict, run_dict
 
-app = FastAPI(title="TrustTrace API", version="0.1.0")
 
-
-@app.on_event("startup")
-def on_startup() -> None:
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     init_db()
+    yield
+
+
+app = FastAPI(title="TrustTrace API", version="0.1.0", lifespan=lifespan)
 
 
 @app.get("/health")
@@ -110,6 +113,15 @@ def create_run(payload: RunCreate, db: Session = Depends(get_db)):
     except ValueError as exc:
         raise HTTPException(400, str(exc))
     return run_dict(run)
+
+
+@app.get("/runs")
+def list_runs(project_id: str | None = None, db: Session = Depends(get_db)):
+    query = db.query(Run)
+    if project_id:
+        query = query.filter(Run.project_id == project_id)
+    runs = query.order_by(Run.started_at.desc()).all()
+    return [run_dict(r, include_executions=False) for r in runs]
 
 
 @app.get("/runs/{run_id}")
