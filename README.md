@@ -5,10 +5,10 @@ RAG apps, LLM document-processing workflows, extraction/classification
 pipelines, and tool-using agents through one reusable core, pluggable
 adapters, and per-application evaluation packs.
 
-**Status: Phase 1-2 of the build (generic core) is implemented and tested.**
-Frontend, the CovenAce evaluation pack, and the API surface for dataset/test
-case management are not yet built -- see "What's implemented" below for the
-exact boundary.
+**Status:** backend (generic core, 2 evaluation packs, full API) is
+implemented and tested. A React frontend now exists and builds cleanly, but
+**could not be verified in a live browser in this environment** -- see
+"Known limitation" below. See "What's implemented" for the exact boundary.
 
 ## Architecture
 
@@ -85,8 +85,12 @@ target application without touching the core.
 
 ## What's NOT yet implemented
 
-- React/Vite frontend (all 12 planned pages) -- the API it would call now
-  exists (see above), so this is next.
+- 6 of the 12 originally planned frontend pages: document collection
+  (upload/browse fixtures), test-case JSON/CSV editor UI (the API supports
+  it; there's no dedicated editor page yet, just create-one-at-a-time),
+  evaluation methodology/config page, and report export page. What exists:
+  dashboard, projects & integrations, dataset/test-case browsing +
+  creation, run creation, run detail + trace viewer, regression compare.
 - Document fixture upload/OCR pipeline (document fixtures can be created
   directly via the model/seed scripts; there's no upload endpoint yet).
 - The live CovenAce Python/workflow adapter -- blocked on the entry-point
@@ -160,6 +164,40 @@ GET    /datasets/{dataset_id}/test-cases/export        ?format=json|csv
 POST   /datasets/{dataset_id}/versions                 immutable snapshot of current active test cases
 GET    /datasets/{dataset_id}/versions
 ```
+
+## Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev      # http://localhost:5173, proxies /api/* to the backend on :8731
+```
+
+React + Vite + JavaScript (not TypeScript) + Tailwind v4, no mocked data --
+every page calls the real backend API above. Pages: Dashboard (real
+pass-rate/coverage/critical-failure stats, denominators kept separate per
+the project's own requirement not to conflate coverage with accuracy),
+Projects & Integrations (create, validate, add integrations/datasets/packs
+inline), Dataset detail (test-case search/filter, create, JSON/CSV
+import+export), Run creation, Run detail (expandable trace viewer showing
+real trace events and evaluator results per execution), Regression Compare.
+
+**Known limitation -- not verified in a live browser in this session.**
+`npm run build` succeeds (confirms no import/syntax/type errors across all
+36 modules) and the code was reviewed line-by-line, but the dev server
+could not actually be loaded in a browser here: this machine deterministically
+hits a Windows `EBUSY: resource busy or locked` error renaming Vite's
+dependency-optimizer temp directory, in every location tried (project
+folder and OS temp folder) and with several Vite config workarounds
+attempted -- the signature matches antivirus real-time scanning locking a
+freshly-created folder. Fixing it needs a Windows Defender exclusion for
+the project (or frontend/node_modules) folder, which wasn't made without
+explicit approval since it's a security-relevant system change. If you hit
+the same error running `npm run dev` yourself: add that exclusion, or try
+on a machine without the same antivirus policy, then let me know and I'll
+do the actual browser walkthrough (click through each page, verify the
+trace viewer expands, verify create/import/export round-trip in the UI)
+that this README currently cannot claim.
 
 Round-trip tested both ways (export then re-import reproduces the same
 test cases) in `backend/tests/test_dataset_and_test_case_api.py`.
