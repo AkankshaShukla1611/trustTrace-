@@ -26,6 +26,10 @@ class ExecutionStatus(str, Enum):
     UNEVALUATED = "unevaluated"
     EXECUTION_ERROR = "execution_error"
     CANCELLED = "cancelled"
+    NEEDS_REVIEW = "needs_review"
+    """At least one applicable evaluator (typically the optional LLM judge)
+    returned an inconclusive verdict and none failed -- a human should look
+    at this one rather than it being silently counted as passed."""
 
 
 class EvaluatorStatus(str, Enum):

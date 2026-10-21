@@ -20,6 +20,9 @@ const STYLES = {
   running: 'bg-amber-100 text-amber-800',
   pending: 'bg-amber-100 text-amber-800',
 
+  needs_review: 'bg-violet-100 text-violet-800',
+  inconclusive: 'bg-violet-100 text-violet-800',
+
   critical: 'bg-rose-200 text-rose-900',
   high: 'bg-orange-100 text-orange-800',
   medium: 'bg-amber-100 text-amber-800',

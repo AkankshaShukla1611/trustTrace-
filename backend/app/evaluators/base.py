@@ -43,6 +43,9 @@ class EvaluationOutcome:
 class BaseEvaluator(ABC):
     name: str = "base_evaluator"
     version: str = "1.0.0"
+    deterministic: bool = True
+    """False for judgment-based evaluators (e.g. an LLM judge) -- lets the
+    API and UI label a result as a model's opinion rather than a fact."""
 
     @abstractmethod
     def evaluate(self, ctx: EvaluationContext) -> EvaluationOutcome:

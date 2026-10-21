@@ -20,7 +20,7 @@ from app.models.run import Run
 from app.models.test_case import TestCase
 from app.runner.regression import compare_runs
 
-_STATUS_KEYS = ["passed", "failed", "unevaluated", "execution_error", "cancelled"]
+_STATUS_KEYS = ["passed", "failed", "unevaluated", "execution_error", "cancelled", "needs_review"]
 
 
 def _empty_status_counts() -> dict:
@@ -51,6 +51,7 @@ def build_run_report(db: Session, run_id: str) -> dict:
     by_category: dict[str, dict] = {}
     by_severity: dict[str, dict] = {}
     failures = []
+    needs_review = []
     unavailable_evaluations = []
     limitations: set[str] = set()
     live_execution_false_count = 0
@@ -73,6 +74,7 @@ def build_run_report(db: Session, run_id: str) -> dict:
                 live_execution_false_count += 1
 
         evaluator_failures = []
+        evaluator_inconclusive = []
         for result in execution.evaluator_results:
             if result.limitations:
                 limitations.add(result.limitations)
@@ -94,6 +96,10 @@ def build_run_report(db: Session, run_id: str) -> dict:
                         "severity": result.severity,
                     }
                 )
+            elif result.status == "inconclusive":
+                evaluator_inconclusive.append(
+                    {"evaluator_name": result.evaluator_name, "reason": result.reason}
+                )
 
         if execution.status in (ExecutionStatus.FAILED, ExecutionStatus.EXECUTION_ERROR):
             failures.append(
@@ -106,6 +112,16 @@ def build_run_report(db: Session, run_id: str) -> dict:
                     "evaluator_failures": evaluator_failures,
                     "error_category": execution.error_category,
                     "error_detail": execution.error_detail,
+                }
+            )
+        elif execution.status == ExecutionStatus.NEEDS_REVIEW:
+            needs_review.append(
+                {
+                    "test_case_id": execution.test_case_id,
+                    "test_case_name": test_case.name if test_case else None,
+                    "category": category,
+                    "severity": severity,
+                    "evaluator_inconclusive": evaluator_inconclusive,
                 }
             )
 
@@ -157,6 +173,7 @@ def build_run_report(db: Session, run_id: str) -> dict:
             "by_severity": by_severity,
         },
         "failures": failures,
+        "needs_review": needs_review,
         "unavailable_evaluations": unavailable_evaluations,
         "regression": regression,
         "known_limitations": sorted(limitations),
@@ -191,7 +208,7 @@ def render_markdown(report: dict) -> str:
     lines.append(
         f"- Passed: {counts['passed']} | Failed: {counts['failed']} | "
         f"Unevaluated: {counts['unevaluated']} | Execution errors: {counts['execution_error']} | "
-        f"Cancelled: {counts['cancelled']}"
+        f"Needs review: {counts['needs_review']} | Cancelled: {counts['cancelled']}"
     )
     pass_rate = metrics["pass_rate_of_evaluated"]
     coverage = metrics["evaluation_coverage"]
@@ -231,6 +248,20 @@ def render_markdown(report: dict) -> str:
                 lines.append(f"  - error ({f['error_category']}): {f['error_detail']}")
             for ef in f["evaluator_failures"]:
                 lines.append(f"  - {ef['evaluator_name']} [{ef['status']}]: {ef['reason']}")
+    lines.append("")
+
+    lines.append(f"## Needs human review ({len(report['needs_review'])})")
+    lines.append(
+        "The optional LLM judge returned an inconclusive verdict for these, with no deterministic "
+        "failure either -- not counted as passed. A person should look at these."
+    )
+    if not report["needs_review"]:
+        lines.append("None.")
+    else:
+        for item in report["needs_review"]:
+            lines.append(f"- **{item['test_case_name'] or item['test_case_id']}** ({item['category']}, severity {item['severity']})")
+            for ic in item["evaluator_inconclusive"]:
+                lines.append(f"  - {ic['evaluator_name']}: {ic['reason']}")
     lines.append("")
 
     lines.append(f"## Unavailable evaluations ({len(report['unavailable_evaluations'])})")

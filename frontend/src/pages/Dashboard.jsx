@@ -42,6 +42,7 @@ export default function Dashboard() {
     failed: executions.filter((e) => e.status === 'failed').length,
     unevaluated: executions.filter((e) => e.status === 'unevaluated').length,
     execution_error: executions.filter((e) => e.status === 'execution_error').length,
+    needs_review: executions.filter((e) => e.status === 'needs_review').length,
   }
   const total = executions.length
   const evaluated = counts.passed + counts.failed
@@ -76,9 +77,10 @@ export default function Dashboard() {
         <StatTile label="Execution errors" value={counts.execution_error} sublabel="distinct from a wrong answer" />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
         <StatTile label="Passed" value={counts.passed} />
         <StatTile label="Failed" value={counts.failed} />
+        <StatTile label="Needs review" value={counts.needs_review} sublabel="inconclusive LLM judge verdict" />
         <StatTile label="Unevaluated" value={counts.unevaluated} sublabel="no applicable evaluator ran" />
         <StatTile label="Execution errors" value={counts.execution_error} />
       </div>

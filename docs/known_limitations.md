@@ -21,15 +21,17 @@ nothing is implied to be finished that isn't.
   product) was researched only via its public marketing page -- no
   adapter, pack, or fixtures exist for it.
 
-## Deliberately deferred (not blocked, just not prioritized)
-
-- **LLM-as-judge evaluator.** No semantic/judgment-based evaluator is
-  wired in. Every evaluator that runs today is a pure deterministic
-  function -- correct per the project's own requirement that the free
-  local demo need no API key, but it means nuanced free-text judgment
-  (beyond lexical-overlap citation support) isn't covered.
-
 ## Partial by design, not by oversight
+
+- **LLM-as-judge evaluator is built, but only verified without a real key.**
+  `app/evaluators/llm_judge.py` is wired in (9th evaluator, opt-in per
+  test case, requires `ANTHROPIC_API_KEY`), its exact request/response
+  contract is checked against current Claude API docs, and 10 tests cover
+  opt-in gating, verdict mapping, error handling, and the full runner
+  integration -- all with the Anthropic client mocked. It has never been
+  exercised against a real Claude response, because no API key has been
+  supplied in this environment. If you add a key, a disputed/inconclusive
+  verdict surfaces as `needs_review`, never silently as a pass.
 
 - **File/batch adapter mode** (used for the whole CovenAce pack today)
   can only evaluate supplied output and evidence -- it is structurally

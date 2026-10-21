@@ -58,14 +58,16 @@ consolidated list of everything not yet done, blocked, or partial.
   (calls an already-installed function -- not arbitrary code execution),
   `file` (evaluates pre-exported outputs, explicitly marked as unable to
   test live execution).
-- **Seven deterministic evaluators**, each independently unit tested with
+- **Eight deterministic evaluators**, each independently unit tested with
   hand-computed expected values: schema/required-field/type/enum
   correctness, factual/numeric correctness (exact, normalized-string,
   tolerance, date), retrieval metrics (Recall@K, Precision@K, MRR, nDCG),
   three-part citation grounding (exists / relevant / lexically supports),
   abstention correctness (never invents a value when evidence is missing),
-  conflict detection (flags disagreement across sources), and missing-field
-  correctness.
+  conflict detection (flags disagreement across sources), missing-field
+  correctness, and an HITL gate (no unresolved human-review flags before
+  output is treated as finalized). Plus a 9th, optional LLM-as-judge
+  evaluator -- see below.
 - **Test runner** (`app/runner/engine.py`) that executes a dataset version
   against a real adapter, persists every execution with explicit statuses
   (`passed` / `failed` / `unevaluated` / `execution_error` / `cancelled`),
@@ -102,11 +104,27 @@ consolidated list of everything not yet done, blocked, or partial.
   never silently reported as fully read when it wasn't. Verified live
   with a real hand-built PDF (not just mocked): real native extraction,
   real 400/413 validation errors, real partial-status fallback path.
-- **95 passing automated tests** (`backend/tests/`), including true
-  end-to-end runs through both the mock adapter and the CovenAce file
-  adapter, full API-level tests via FastAPI's TestClient, and a
-  persistence test that reopens the SQLite file in a fresh process to
-  confirm data survives a restart.
+- **Optional LLM-as-judge evaluator** (`app/evaluators/llm_judge.py`):
+  9th evaluator, strictly opt-in -- unavailable unless a test case sets
+  `evaluator_config["llm_judge"]` *and* `ANTHROPIC_API_KEY` is configured,
+  so the free local demo never needs it (8 deterministic evaluators are
+  the whole demo). Uses Claude's `output_config.format` / `json_schema`
+  structured-output feature for a guaranteed-parseable verdict
+  (`pass`/`fail`/`inconclusive`), with the real request/response contract
+  checked against current docs before writing the code -- the same
+  discipline as the Mistral OCR integration. An `inconclusive` verdict is
+  never silently counted as a pass: it rolls the execution up to a new
+  `needs_review` status, surfaced on the dashboard and in a dedicated
+  report section, so a disputed result reaches a human instead of
+  disappearing into "passed." `GET /evaluators` marks it
+  `deterministic: false` so the UI never conflates a model's opinion with
+  a deterministic fact.
+- **112 passing automated tests** (`backend/tests/`), including true
+  end-to-end runs through the mock adapter, the CovenAce file adapter,
+  and the LLM judge (Anthropic client mocked -- no real key needed to
+  verify the integration wires together correctly), full API-level tests
+  via FastAPI's TestClient, and a persistence test that reopens the
+  SQLite file in a fresh process to confirm data survives a restart.
 
 ## What's NOT yet implemented
 
@@ -120,8 +138,6 @@ consolidated list of everything not yet done, blocked, or partial.
 - The live CovenAce Python/workflow adapter -- blocked on the entry-point
   details listed in docs/adapter_guide.md. The CovenAce evaluation pack
   itself exists and is tested, but only in file/batch mode.
-- LLM-as-judge evaluator (deliberately deferred; deterministic evaluators
-  are sufficient for the free local demo per the project requirements).
 
 ## Setup
 
@@ -141,7 +157,7 @@ source .venv/Scripts/activate
 python -m pytest -q
 ```
 
-Expected: `96 passed`.
+Expected: `112 passed`.
 
 ## Run the app locally
 

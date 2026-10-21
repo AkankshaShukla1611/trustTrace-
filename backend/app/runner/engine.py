@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.adapters import get_adapter_class
 from app.adapters.base import AdapterExecutionResult
 from app.enums import ExecutionStatus, RunMode
-from app.evaluators import DETERMINISTIC_EVALUATORS, EvaluationContext, compute_execution_status
+from app.evaluators import ALL_EVALUATORS, EvaluationContext, compute_execution_status
 from app.models.document import DocumentFixture
 from app.models.evaluation_pack import EvaluationPack  # noqa: F401 (keeps relationship imports resolvable)
 from app.models.project import Integration
@@ -18,6 +18,9 @@ from app.models.test_case import TestCase
 def _test_case_to_dict(test_case: TestCase) -> dict:
     return {
         "id": test_case.id,
+        "name": test_case.name,
+        "description": test_case.description,
+        "input_payload": test_case.input_payload,
         "behavior_type": test_case.behavior_type,
         "expected_output": test_case.expected_output,
         "expected_evidence": test_case.expected_evidence or [],
@@ -154,8 +157,8 @@ def run_dataset_version(
             documents_by_id=documents_by_id,
         )
 
-        outcomes = [evaluator.evaluate(ctx) for evaluator in DETERMINISTIC_EVALUATORS]
-        for evaluator, outcome in zip(DETERMINISTIC_EVALUATORS, outcomes):
+        outcomes = [evaluator.evaluate(ctx) for evaluator in ALL_EVALUATORS]
+        for evaluator, outcome in zip(ALL_EVALUATORS, outcomes):
             db.add(
                 EvaluatorResult(
                     execution_id=execution.id,
